@@ -10,11 +10,11 @@ import setup, scanner
 # Check if the correct files exist
 if not os.path.exists("videos.json"):
     with open("videos.json", "w") as file:
-        file.write("[\n\n]")
+        file.write("[]")
 
 if not os.path.exists("channels.json"):
     with open("channels.json", "w") as file:
-        file.write("[\n\n]")
+        file.write("[]")
 
 if not os.path.exists("settings.json"):
     setup.settings()
