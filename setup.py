@@ -21,7 +21,8 @@ defaultSettings = {
     "scan_interval": "12h",
     "periodic_scan": True,
     "download_channel_art": True,
-    "download_subtitles": True
+    "download_subtitles": True,
+    "download_thumbnails": True
 }
 
 def installPip():
