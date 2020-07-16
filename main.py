@@ -57,6 +57,18 @@ for video in AllVideos:
 
         urllib.request.urlretrieve(video["video_thumbnail_url"], OutputPath + ".jpg")
 
+    # Download subtitles
+    if settings["download_subtitles"] == True:
+        SubtitleOptions = {
+            "writesubtitles": True,
+            "skip_download": True,
+            "allsubtitles": True,
+            "outtmpl": f"{VideoOnlyPath}.%(ext)s"
+        }
+
+        with youtube_dl.YoutubeDL(SubtitleOptions) as subs:
+            subs.download([f"https://www.youtube.com/watch?v={VideoID}"])
+
     ##############################
     #                            #
     #       Download video       #

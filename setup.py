@@ -20,7 +20,8 @@ defaultSettings = {
     "max_videos": 10,
     "scan_interval": "12h",
     "periodic_scan": True,
-    "download_channel_art": True
+    "download_channel_art": True,
+    "download_subtitles": True
 }
 
 def settings():
