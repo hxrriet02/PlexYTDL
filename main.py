@@ -98,22 +98,18 @@ for video in AllVideos:
                 VideoOnlyPath = f"{TempPath} (video).{ext}"
 
         # Combines audio and video into one file
-        # Old .mkv output that needs a plex agent to get metadata
-        cmd(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}" -c copy "{OutputPath}.mkv"')
-
-        # New one that uses local metadata to function
-        #cmd(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}" -c copy "{OutputPath}.mp4"' +
-        #        f' -metadata title="{video["video_title"]}"' +
-        #        f' -metadata description="{video["video_description"]}"' +
-        #        f' -metadata year+{video["video_release_date"].split("-")[0]}'
-        #        )
-        # .outputOptions("-metadata", "title="+video.shortTitle, "-metadata", "AUTHOR="+video.subChannel, "-metadata", "YEAR="+Date(video.releaseDate), "-metadata", "description="+video.description, "-metadata", "synopsis="+video.description, "-strict", "-2")
-
+        cmd(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}"' +
+                f' -metadata title="{video["video_title"]}"' +
+                f' -metadata author="{video["channel_name"]}"' +
+                f' -metadata description="{video["video_description"]}"' +
+                f' -metadata year={video["video_release_date"]}' + # .split("-")[0]}' +
+                f' -codec copy "{OutputPath}.mp4"')
 
         # Delete audio and video only files.
         files = os.listdir(f"{TempDir}")
-
+"""
         for file in files:
             if ("(audio)" in file) or ("(video)" in file):
                 if VideoID in file:
                     os.remove(f"{channel}/{file}")
+"""
