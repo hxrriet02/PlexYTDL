@@ -22,6 +22,7 @@ if not os.path.exists("channels.json"):
         file.write("[]")
 
 if not os.path.exists("settings.json"):
+    setup.installPip()
     setup.settings()
 
 
@@ -114,7 +115,7 @@ for video in AllVideos:
                 f' -metadata title="{video["video_title"]}"' +
                 f' -metadata author="{video["channel_name"]}"' +
                 f' -metadata description="{video["video_description"]}"' +
-                f' -metadata year={video["video_release_date"]}' + # .split("-")[0]}' +
+                f' -metadata year={video["video_release_date"]}' +
                 f' -codec copy "{OutputPath}.mp4"')
 
         # Delete audio and video only files.

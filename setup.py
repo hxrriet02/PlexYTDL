@@ -3,7 +3,7 @@
 #      Only used when called by main.py     #
 #
 
-import easygui, json
+import easygui, json, subprocess
 
 defaultSettings = {
     "api_key": "",
@@ -23,6 +23,12 @@ defaultSettings = {
     "download_channel_art": True,
     "download_subtitles": True
 }
+
+def installPip():
+    print("Installing pip requirements")
+    subprocess.call("pip install youtube-dl")
+    subprocess.call("pip install easygui")
+    subprocess.call("pip install ffmpeg")
 
 def settings():
     defaultSettings["api_key"] = input("\n  -- Setup --\n\nPlease enter your API key: ")
