@@ -39,21 +39,28 @@ def ScanChannels(settings, FileEmpty):
         f.write("[]")
 
     # For each channel get playlist of uploads, then get list of videos
-    for ChannelID in settings["to_download"]["channel_ids"]:
-        # Gets playlist ID for channel uploads
-        ChannelURL = f'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&key={settings["api_key"]}&id={ChannelID}'
+    if len(settings["to_download"]["channel_ids"]) > 0:
+        for ChannelID in settings["to_download"]["channel_ids"]:
+            # Gets playlist ID for channel uploads
+            ChannelURL = f'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&key={settings["api_key"]}&id={ChannelID}'
 
-        with urllib.request.urlopen(ChannelURL) as request:
-            PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-            UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
+            with urllib.request.urlopen(ChannelURL) as request:
+                PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
 
-    #For usernames
-    for ChannelUser in settings["to_download"]["channel_usernames"]:
-        ChannelURL = f'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&key={settings["api_key"]}&forUsername={ChannelUser}'
+    # For usernames
+    if len(settings["to_download"]["channel_usernames"]) > 0:
+        for ChannelUser in settings["to_download"]["channel_usernames"]:
+            ChannelURL = f'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&key={settings["api_key"]}&forUsername={ChannelUser}'
 
-        with urllib.request.urlopen(ChannelURL) as request:
-            PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-            UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
+            with urllib.request.urlopen(ChannelURL) as request:
+                PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
+
+    # For playlist IDs
+    if len(settings["to_download"]["playlist_ids"]) > 0:
+        for playlist in settings["to_download"]["playlist_ids"]:
+            UpdateVideoFile(settings["api_key"], settings["max_videos"], playlist)
 
 # Gets videos from playlist ID, then updates the videos.json
 def UpdateVideoFile(api_key, max_videos, PlaylistID):

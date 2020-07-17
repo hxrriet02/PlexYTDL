@@ -15,6 +15,9 @@ defaultSettings = {
         ],
         "channel_usernames": [
 
+        ],
+        "playlist_ids": [
+
         ]
     },
     "max_videos": 10,
