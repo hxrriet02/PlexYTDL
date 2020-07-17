@@ -46,7 +46,7 @@ def ScanChannels(settings, FileEmpty):
 
             with urllib.request.urlopen(ChannelURL) as request:
                 PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"])
 
     # For usernames
     if len(settings["to_download"]["channel_usernames"]) > 0:
@@ -55,15 +55,15 @@ def ScanChannels(settings, FileEmpty):
 
             with urllib.request.urlopen(ChannelURL) as request:
                 PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID)
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"])
 
     # For playlist IDs
     if len(settings["to_download"]["playlist_ids"]) > 0:
         for playlist in settings["to_download"]["playlist_ids"]:
-            UpdateVideoFile(settings["api_key"], settings["max_videos"], playlist)
+            UpdateVideoFile(settings["api_key"], settings["max_videos"], playlist, settings["exceptions"])
 
 # Gets videos from playlist ID, then updates the videos.json
-def UpdateVideoFile(api_key, max_videos, PlaylistID):
+def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions):
     # Gets videos from uploads playlist (up to max_videos in config)
     PlaylistRequestURL = f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&key={api_key}&maxResults={max_videos}&playlistId={PlaylistID}'
 
@@ -80,6 +80,11 @@ def UpdateVideoFile(api_key, max_videos, PlaylistID):
         videoJSON["video_id"] = video["snippet"]["resourceId"]["videoId"]
         videoJSON["video_description"] = video["snippet"]["description"]
         videoJSON["video_release_date"] = video["snippet"]["publishedAt"].split("T")[0]
+
+        # Check for exceptions
+        for exception in exceptions:
+            if exception["keyword"] in videoJSON["video_title"]:
+                videoJSON["channel_name"] = exception["new_channel_name"]
 
         # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
         try:

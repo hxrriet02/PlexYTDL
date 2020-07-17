@@ -18,7 +18,19 @@ From there, if you want to download more than one YouTube channel's videos, just
 
 After you've set up the program, each time you want to download videos, just run `main.py`.
 
+## Exceptions
 
+If you would like some videos to be in a different folder to those of the main channel, this is where exceptions come in. For example, LinusTechTips have "WAN Show" videos and they specify this with `- WAN Show` at the end. So, the exceptions will search for any video containing `WAN Show` and put it in a new folder, in my case `The WAN Show`.
+
+#### So, how do you set one up?
+In settings there is a section that says, this is the example from above. ```json
+"exceptions": [
+  {
+    "keyword": "WAN Show",
+    "new_channel_name": "The WAN Show"
+  }
+]```
+You can copy, or replace this template by adding a ',' after the '}' and adding "keyword" and "new_channel_name" again.
 
 
 ## Future Plans
