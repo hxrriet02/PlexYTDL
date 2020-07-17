@@ -20,6 +20,12 @@ defaultSettings = {
 
         ]
     },
+    "exceptions": [
+        {
+        "keyword": "WAN Show",
+        "new_channel_name": "The WAN Show"
+        }
+    ],
     "max_videos": 10,
     "scan_interval": "12h",
     "periodic_scan": True,
@@ -65,7 +71,7 @@ def settings():
     "location, leave blank for 'videos/' or change it now")
     choice = input()
     if defaultSettings["temp_dir"] == "":
-        defaultSettings["temp_dir"] = "videos/"
+        defaultSettings["temp_dir"] = "videos"
     else:
         defaultSettings["temp_dir"] = choice.replace("\\", "/")
 
