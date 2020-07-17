@@ -1,4 +1,4 @@
-import json, urllib, os, subprocess, youtube_dl
+import json, urllib, os, subprocess, re, youtube_dl
 
 # Variable
 AudioTypes = ["webm", "m4a"]
@@ -16,16 +16,21 @@ def artwork(ChannelID, ChannelName, settings, UseID = True):
 
     # Download Logo
     logo = rawJson["snippet"]["thumbnails"]["high"]["url"]
-    image(logo, f'{settings["output_dir"]}/{ChannelName}/poster.jpg')
+    image(logo, f'{settings["output_dir"]}/{ChannelName}', 'poster.jpg')
     # Download background
     background = rawJson["brandingSettings"]["image"]["bannerTvImageUrl"]
-    image(background, f'{settings["output_dir"]}/{ChannelName}/background.jpg')
+    image(background, f'{settings["output_dir"]}/{ChannelName}', 'background.jpg')
     # Download banner
     banner = rawJson["brandingSettings"]["image"]["bannerTabletExtraHdImageUrl"]
-    image(banner, f'{settings["output_dir"]}/{ChannelName}/banner.jpg')
+    image(banner, f'{settings["output_dir"]}/{ChannelName}', 'banner.jpg')
 
-def image(url, output):
-    urllib.request.urlretrieve(url, output)
+def image(url, dir, fileName):
+    try:
+        os.makedirs(dir)
+    except Exception:
+        pass
+
+    urllib.request.urlretrieve(url, f"{dir}/{fileName}")
 
 def videos(settings):
     with open("videos.json") as f:
@@ -37,11 +42,12 @@ def videos(settings):
         VideoID = video["video_id"]
         VideoChannel = video["channel_name"]
         VideoReleaseDate = video["video_release_date"]
+        VideoFileTitle = re.sub(r"\W+", " ", video["video_title"])
 
         TempDir = settings["temp_dir"]
-        TempPath = f"{TempDir}/{VideoChannel}/{VideoReleaseDate} [{VideoReleaseDate}]"
+        TempPath = f"{TempDir}/{VideoChannel}/{VideoReleaseDate} {VideoFileTitle}"
         OutputDir = settings["output_dir"]
-        OutputPath = f"{OutputDir}/{VideoChannel}/{VideoReleaseDate} [{VideoReleaseDate}]"
+        OutputPath = f"{OutputDir}/{VideoChannel}/{VideoReleaseDate} {VideoFileTitle}"
 
         # Download logo, background and banner
         artwork(video["channel_id"], VideoChannel, settings)
@@ -116,7 +122,7 @@ def videos(settings):
                     f' -codec copy "{OutputPath}.mp4"')
 
             # Delete audio and video only files.
-            files = os.listdir(f"{TempDir}")
+            files = os.listdir(f"{os.getcwd()}/{TempDir}")
 
             for file in files:
                 if ("(audio)" in file) or ("(video)" in file):
