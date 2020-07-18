@@ -13,7 +13,7 @@ videoJSON = {
         "description":"",
         "release_date":"",
         "thumbnail_url":"",
-        "title":""
+        "title":"",
         "id":""
     },
     "progress": {
@@ -29,10 +29,8 @@ videoJSON = {
     ]
 }
 
-#     "downloaded_video": False,
-#     "download_video_started": False,
-#     "downloaded_thumbnail": False
-# }
+VideoIdsInJson = [ ]
+VideoFinalDirs = [ ]
 
 def start():
     # Get channels from JSON file
@@ -49,8 +47,18 @@ def start():
 def ScanChannels(settings, FileEmpty):
     # Clears the video.json file (would be better to keep data and just append
     #                                   to it but thats a task for another day)
-    with open("videos.json", "w") as f:
-        f.write("[]")
+    with open("videos.json", "r") as f:
+        array = json.loads(f.read())
+        for video in array:
+            # Add video ids from current 'videos.json' to then check later
+            VideoIdsInJson.append(video["video"]["id"])
+            # Check if video has already been downloaded
+            # VideoFinalDirs.append(video["progress"]["dir_final"])
+
+        re.sub(r"\W+", " ", string)
+
+    # with open("videos.json", "w") as f:
+    #    f.write("[]")
 
     # For each channel get playlist of uploads, then get list of videos
     if len(settings["to_download"]["channel_ids"]) > 0:
@@ -60,7 +68,7 @@ def ScanChannels(settings, FileEmpty):
 
             with urllib.request.urlopen(ChannelURL) as request:
                 PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"])
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"], settings["output_dir"])
 
     # For usernames
     if len(settings["to_download"]["channel_usernames"]) > 0:
@@ -69,15 +77,15 @@ def ScanChannels(settings, FileEmpty):
 
             with urllib.request.urlopen(ChannelURL) as request:
                 PlaylistID = json.load(request)["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"])
+                UpdateVideoFile(settings["api_key"], settings["max_videos"], PlaylistID, settings["exceptions"], settings["output_dir"])
 
     # For playlist IDs
     if len(settings["to_download"]["playlist_ids"]) > 0:
         for playlist in settings["to_download"]["playlist_ids"]:
-            UpdateVideoFile(settings["api_key"], settings["max_videos"], playlist, settings["exceptions"])
+            UpdateVideoFile(settings["api_key"], settings["max_videos"], playlist, settings["exceptions"], settings["output_dir"])
 
 # Gets videos from playlist ID, then updates the videos.json
-def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions):
+def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions, OutputDir):
     # Gets videos from uploads playlist (up to max_videos in config)
     PlaylistRequestURL = f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&key={api_key}&maxResults={max_videos}&playlistId={PlaylistID}'
 
@@ -85,33 +93,39 @@ def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions):
     with urllib.request.urlopen(PlaylistRequestURL) as request:
         playlist = json.load(request)
 
+    # Gets current JSON
+    with open("videos.json") as file:
+        VideoFile = json.loads(file.read())
+
     # Loop for each video in the playlist
     for video in playlist["items"]:
-        currentVideoJSON = videoJSON
-        videoJSON["channel_name"] = video["snippet"]["channelTitle"]
-        videoJSON["channel_id"] = video["snippet"]["channelId"]
-        videoJSON["video"]["title"] = video["snippet"]["title"]
-        videoJSON["video"]["id"] = video["snippet"]["resourceId"]["videoId"]
-        videoJSON["video"]["description"] = video["snippet"]["description"]
-        videoJSON["video"]["release_date"] = video["snippet"]["publishedAt"].split("T")[0]
+        if video["snippet"]["resourceId"]["videoId"] not in VideoIdsInJson:
+            videoJSON["channel_name"] = video["snippet"]["channelTitle"]
+            videoJSON["channel_id"] = video["snippet"]["channelId"]
+            videoJSON["video"]["title"] = video["snippet"]["title"]
+            videoJSON["video"]["id"] = video["snippet"]["resourceId"]["videoId"]
+            videoJSON["video"]["description"] = video["snippet"]["description"]
+            videoJSON["video"]["release_date"] = video["snippet"]["publishedAt"].split("T")[0]
+            videoJSON["progress"]["dir_final"] = OutputDir + re.sub(r"\W+", " ", videoJSON["video"]["title"])
 
-        # Check for exceptions
-        for exception in exceptions:
-            if exception["keyword"] in videoJSON["video"]["title"]:
-                videoJSON["channel_name"] = exception["new_channel_name"]
+            # Check for exceptions
+            for exception in exceptions:
+                if exception["keyword"] in videoJSON["video"]["title"]:
+                    videoJSON["channel_name"] = exception["new_channel_name"]
 
-        # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
-        try:
-            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
-        except KeyError:
-            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
+            # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
+            try:
+                videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
+            except KeyError:
+                videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
 
-        # Gets current JSON
-        with open("videos.json") as file:
-            VideoFile = json.loads(file.read())
             VideoFile.append(videoJSON)
 
-        # Appends new video to JSON
-        with open("videos.json", "w") as file:
-            json.dump(VideoFile, file, sort_keys=True, indent=4,
-                            separators=(',', ': '))
+        # Remove the videos that have been downloaded from the 'videos.json' file
+        # if re.sub(r"\W+", " ", videoJSON["video"]["title"]) not in os.listdir(f'{OutputDir}/{video["snippet"]["channelTitle"]}'):
+
+
+    # Appends new video to JSON
+    with open("videos.json", "w") as file:
+        json.dump(VideoFile, file, sort_keys=True, indent=4,
+                        separators=(',', ': '))
