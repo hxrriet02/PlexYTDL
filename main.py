@@ -1,6 +1,6 @@
 # Imports
 from __future__ import unicode_literals # For YouTube-DL
-import urllib.request, json, os, youtube_dl, ffmpeg, subprocess
+import urllib.request, json, os, youtube_dl, ffmpeg, subprocess, time
 
 # My modules
 import downloader, setup, scanner
@@ -28,7 +28,20 @@ with open("settings.json", "r") as f:
     settings = json.loads(f.read())
 
 # Starts scanning for videos
-scanner.start()
 
-# Download all videos
-downloader.videos(settings)
+
+# For if "download_between_hours" is true
+if settings["download_hours"]["download_between_hours"] == False:
+    scanner.start()
+
+    # Download all videos
+    downloader.videos(settings)
+else:
+    while True:
+        if settings["time_start"] < int(time.strftime("%H%M")) < settings["time_end"]:
+            scanner.start()
+
+            # Download all videos
+            downloader.videos(settings)
+
+        time.sleep(120)

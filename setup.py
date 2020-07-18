@@ -29,6 +29,11 @@ defaultSettings = {
     "max_videos": 10,
     "scan_interval": "12h",
     "periodic_scan": True,
+    "download_hours": {
+        "download_between_hours": False,
+        "time_start": "0200",
+        "time_end": "0800"
+    },
     "download_channel_art": True,
     "download_subtitles": True,
     "download_thumbnails": True

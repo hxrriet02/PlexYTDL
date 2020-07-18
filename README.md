@@ -14,6 +14,10 @@ Currently, the time between scans does not work, but it is on my to-do list.
 
 From there, if you want to download more than one YouTube channel's videos, just go to `settings.json` and add to the `channel_ids` list.
 
+###### Download between hours
+
+If you would like the downloader to only work in the night, change the `download_hours` variable in settings to `true`. By default, the downloader does not download between set hours and only runs once. But if it is enabled, it will download between `time_start` and `time_end`.
+
 ## After Setup
 
 After you've set up the program, each time you want to download videos, just run `main.py`.
@@ -22,7 +26,7 @@ After you've set up the program, each time you want to download videos, just run
 
 If you would like some videos to be in a different folder to those of the main channel, this is where exceptions come in. For example, LinusTechTips have "WAN Show" videos and they specify this with `- WAN Show` at the end. So, the exceptions will search for any video containing `WAN Show` and put it in a new folder, in my case `The WAN Show`.
 
-#### So, how do you set one up?
+###### So, how do you set one up?
 In settings there is a section that says, this is the example from above.
 ```
 "exceptions": [
