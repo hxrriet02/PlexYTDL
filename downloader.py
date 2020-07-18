@@ -17,14 +17,19 @@ def artwork(ChannelID, ChannelName, settings, UseID = True):
     # Only downloads if "download_channel_art" is set to true in settings
     if settings["download_channel_art"] == True:
         # Download Logo
-        logo = rawJson["snippet"]["thumbnails"]["high"]["url"]
-        image(logo, f'{settings["output_dir"]}/{ChannelName}', 'poster.jpg')
+        if not os.path.exists(f'{settings["output_dir"]}/{ChannelName}/poster.jpg'):
+            logo = rawJson["snippet"]["thumbnails"]["high"]["url"]
+            image(logo, f'{settings["output_dir"]}/{ChannelName}', 'poster.jpg')
+
         # Download background
-        background = rawJson["brandingSettings"]["image"]["bannerTvImageUrl"]
-        image(background, f'{settings["output_dir"]}/{ChannelName}', 'background.jpg')
+        if not os.path.exists(f'{settings["output_dir"]}/{ChannelName}/background.jpg'):
+            background = rawJson["brandingSettings"]["image"]["bannerTvImageUrl"]
+            image(background, f'{settings["output_dir"]}/{ChannelName}', 'background.jpg')
+
         # Download banner
-        banner = rawJson["brandingSettings"]["image"]["bannerTabletExtraHdImageUrl"]
-        image(banner, f'{settings["output_dir"]}/{ChannelName}', 'banner.jpg')
+        if not os.path.exists(f'{settings["output_dir"]}/{ChannelName}/banner.jpg'):
+            banner = rawJson["brandingSettings"]["image"]["bannerTabletExtraHdImageUrl"]
+            image(banner, f'{settings["output_dir"]}/{ChannelName}', 'banner.jpg')
 
 def image(url, dir, fileName):
     try:
