@@ -20,7 +20,7 @@ If you would like the downloader to only work in the night, change the `download
 
 ## After Setup
 
-After you've set up the program, each time you want to download videos, just run `main.py`.
+After you've set up the program, each time you want to download videos, just run `main.py` or set up the download between hours feature as explained above.
 
 ## Exceptions
 
@@ -47,7 +47,7 @@ You can copy, or replace this template by adding a ',' after the '}' and adding 
 - [x] JSON file for video information
 - [x] Option for subtitles
 - [x] Remove the need for a plex agent and just rely on metadata.
-- [ ] Option to automatically download channel art
+- [x] Option to automatically download channel art
+- [x] Add time for downloading (such as night only)
 - [ ] Don't delete `video.json` each time scanning is triggered, only append to it
 - [ ] Auto scan after set duration.
-- [ ] Add time for downloading (such as night only)
