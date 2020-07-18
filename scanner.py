@@ -7,12 +7,26 @@ import json, urllib
 
 videoJSON = {
     "channel_name": "",
-    "channel_id":"",
-    "video_title":"",
-    "video_id":"",
-    "video_description":"",
-    "video_thumbnail_url":"",
-    "video_release_date":""
+    "channel_id": "",
+    "video_title": "",
+    "video": {
+        "description":"",
+        "release_date":"",
+        "thumbnail_url":"",
+        "title":""
+        "id":""
+    },
+    "progress": {
+        "downloaded_video_only": False,
+        "downloaded_audio_only": False,
+        "downloaded_final": False,
+        "dir_video_only": "",
+        "dir_audio_only": "",
+        "dir_final": ""
+    },
+    "subtitles": [
+
+    ]
 }
 
 #     "downloaded_video": False,
@@ -76,21 +90,21 @@ def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions):
         currentVideoJSON = videoJSON
         videoJSON["channel_name"] = video["snippet"]["channelTitle"]
         videoJSON["channel_id"] = video["snippet"]["channelId"]
-        videoJSON["video_title"] = video["snippet"]["title"]
-        videoJSON["video_id"] = video["snippet"]["resourceId"]["videoId"]
-        videoJSON["video_description"] = video["snippet"]["description"]
-        videoJSON["video_release_date"] = video["snippet"]["publishedAt"].split("T")[0]
+        videoJSON["video"]["title"] = video["snippet"]["title"]
+        videoJSON["video"]["id"] = video["snippet"]["resourceId"]["videoId"]
+        videoJSON["video"]["description"] = video["snippet"]["description"]
+        videoJSON["video"]["release_date"] = video["snippet"]["publishedAt"].split("T")[0]
 
         # Check for exceptions
         for exception in exceptions:
-            if exception["keyword"] in videoJSON["video_title"]:
+            if exception["keyword"] in videoJSON["video"]["title"]:
                 videoJSON["channel_name"] = exception["new_channel_name"]
 
         # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
         try:
-            videoJSON["video_thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
+            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
         except KeyError:
-            videoJSON["video_thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
+            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
 
         # Gets current JSON
         with open("videos.json") as file:

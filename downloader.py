@@ -46,10 +46,10 @@ def videos(settings):
     # Loops through each video in videos.json
     for video in AllVideos:
         # Get needed information
-        VideoID = video["video_id"]
+        VideoID = video["video"]["id"]
         VideoChannel = video["channel_name"]
-        VideoReleaseDate = video["video_release_date"]
-        VideoFileTitle = re.sub(r"\W+", " ", video["video_title"])
+        VideoReleaseDate = video["video"]["release_date"]
+        VideoFileTitle = re.sub(r"\W+", " ", video["video"]["title"])
 
         TempDir = settings["temp_dir"]
         TempPath = f"{TempDir}/{VideoChannel}/{VideoReleaseDate} {VideoFileTitle}"
@@ -66,7 +66,7 @@ def videos(settings):
             except Exception:
                 pass
 
-            urllib.request.urlretrieve(video["video_thumbnail_url"], OutputPath + ".jpg")
+            urllib.request.urlretrieve(video["video"]["thumbnail_url"], OutputPath + ".jpg")
 
         # Download subtitles
         if settings["download_subtitles"] == True:
@@ -122,16 +122,18 @@ def videos(settings):
 
             # Combines audio and video into one file
             subprocess.call(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}"' +
-                    f' -metadata title="{video["video_title"]}"' +
+                    f' -metadata title="{video["video"]["title"]}"' +
                     f' -metadata author="{video["channel_name"]}"' +
-                    f' -metadata description="{video["video_description"]}"' +
-                    f' -metadata year={video["video_release_date"]}' +
+                    f' -metadata description="{video["video"]["description"]}"' +
+                    f' -metadata year={video["video"]["release_date"]}' +
                     f' -codec copy "{OutputPath}.mp4"')
 
             # Delete audio and video only files.
-            files = os.listdir(f"{os.getcwd()}/{TempDir}")
+            # {os.getcwd()}/
+            files = os.listdir(f"{TempDir}")
 
             for file in files:
                 if ("(audio)" in file) or ("(video)" in file):
-                    if VideoID in file:
-                        os.remove(f"{channel}/{file}")
+                    if VideoFileTitle in file:
+                        # os.remove(f"{TempDir}/{file}")
+                        print(f"{TempDir}/{file}")
