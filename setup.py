@@ -36,7 +36,8 @@ defaultSettings = {
     },
     "download_channel_art": True,
     "download_subtitles": True,
-    "download_thumbnails": True
+    "download_thumbnails": True,
+    "log_to_file": False
 }
 
 def installPip():
