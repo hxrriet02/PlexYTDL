@@ -1,8 +1,10 @@
 import json, urllib, os, subprocess, re, youtube_dl, logger
+from datetime import datetime
 
 # Variable
 AudioTypes = ["webm", "m4a"]
 VideoTypes = ["mp4", "webm"]
+DateTimeFormat = "%Y-%m-%d %H:%M:%S"
 
 def FixText(string):
     return string.replace('\\\\', '\\\\\\\\').replace('"', '\\"').replace("'", "\\'").replace("\u2013", "-")
@@ -101,7 +103,8 @@ def videos(settings):
                     "writesubtitles": True,
                     "skip_download": True,
                     "allsubtitles": True,
-                    "outtmpl": f"{OutputPath}.%(ext)s"
+                    "outtmpl": f"{OutputPath}.%(ext)s",
+                    "logger": logger.ytdl()
                 }
 
                 with youtube_dl.YoutubeDL(SubtitleOptions) as subs:
@@ -109,29 +112,35 @@ def videos(settings):
             else:
                 logger.log("  - Skipping subtitles download, setting disabled")
 
+
+
             ##############################
             #                            #
             #       Download video       #
             #                            #
             ##############################
 
-
-            logger.log("  - Downloading best video")
-
+            TimeStart = datetime.now()
             # Video only
+            logger.log("  - Downloading best video")
             VideoOptions = {
                 "format": "bestvideo",
-                "outtmpl": f"{TempPath} (video).%(ext)s"
+                "outtmpl": f"{TempPath} (video).%(ext)s",
+                "logger":logger.ytdl()
             }
 
             with youtube_dl.YoutubeDL(VideoOptions) as ytdlv:
                 ytdlv.download([f"https://www.youtube.com/watch?v={VideoID}"])
 
+            TimeStop = datetime.now()
+            logger.log(f"  - Finished downloading video, it took: {datetime.strptime(TimeStop, DateTimeFormat) - datetime.strptime(TimeStart, DateTimeFormat)}")
+
             # Audio only
             logger.log("  - Downloading best audio")
             AudioOptions = {
                 "format": "bestaudio/best",
-                "outtmpl": f"{TempPath} (audio).%(ext)s"
+                "outtmpl": f"{TempPath} (audio).%(ext)s",
+                "logger": logger.ytdl()
             }
 
             with youtube_dl.YoutubeDL(AudioOptions) as ytdla:
@@ -155,12 +164,17 @@ def videos(settings):
 
             # Combines audio and video into one file
             logger.log("  - Combining audio and video into one file using ffmpeg")
-            subprocess.call(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}"' +
+            output = subprocess.run(f'ffmpeg -i "{VideoOnlyPath}" -i "{AudioOnlyPath}"' +
                     f' -metadata title="{FixText(video["video"]["title"])}"' +
                     f' -metadata author="{FixText(video["channel_name"])}"' +
                     f' -metadata description="{FixText(video["video"]["description"])}"' +
                     f' -metadata year={video["video"]["release_date"]}' +
-                    f' -c copy "{OutputPath}.mp4"')
+                    f' -c copy "{OutputPath}.mp4"', capture_output=True)
+            logger.ffmpeg.log(output.args.replace(r"\n", "\n")
+                    .replace(r"\r", "\r")
+                    .replace(r'\"',"")
+                    .replace(r"'","\'"))
+            # logger.ffmpeg.log(output)
 
             # Delete audio and video only files.
             if os.path.exists(OutputPath + ".mp4"):
