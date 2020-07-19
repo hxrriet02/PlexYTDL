@@ -43,6 +43,15 @@ def image(url, dir, fileName):
 
     urllib.request.urlretrieve(url, f"{dir}/{fileName}")
 
+def DeleteTempFiles(TempDir, VideoFileTitle):
+    files = os.listdir(f"{TempDir}")
+
+    for file in files:
+        if ("(audio)" in file) or ("(video)" in file):
+            if VideoFileTitle in file:
+                logger.log(f"  - Deleting {TempDir}/{file}")
+                os.remove(f"{TempDir}/{file}")
+
 def videos(settings):
     with open("videos.json") as f:
         AllVideos = json.loads(f.read())
@@ -154,15 +163,8 @@ def videos(settings):
                     f' -c copy "{OutputPath}.mp4"')
 
             # Delete audio and video only files.
-            # {os.getcwd()}/
-            files = os.listdir(f"{TempDir}")
-
             if os.path.exists(OutputPath + ".mp4"):
-                logger.log("  - Deleting audio only and video only files")
-                for file in files:
-                    if ("(audio)" in file) or ("(video)" in file):
-                        if VideoFileTitle in file:
-                            # os.remove(f"{TempDir}/{file}")
-                            print(f"{TempDir}/{file}")
+                DeleteTempFiles(TempDir + "/" + VideoChannel, VideoFileTitle)
         else:
+            DeleteTempFiles(TempDir + "/" + VideoChannel, VideoFileTitle)
             logger.log("  - Video already downloaded, skipping")
