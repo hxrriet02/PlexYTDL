@@ -5,7 +5,7 @@ AudioTypes = ["webm", "m4a"]
 VideoTypes = ["mp4", "webm"]
 
 def FixText(string):
-    return string.replace('"', '\"').replace("'", "\'")
+    return string.replace('\\\\', '\\\\\\\\').replace('"', '\\"').replace("'", "\\'").replace("\u2013", "-")
 
 def artwork(ChannelID, ChannelName, settings, UseID = True):
     api_key = settings["api_key"]

@@ -5,10 +5,9 @@
 
 import json, urllib, re, logger
 
-videoJSON = {
+emptyJSON = {
     "channel_name": "",
     "channel_id": "",
-    "video_title": "",
     "video": {
         "description":"",
         "release_date":"",
@@ -46,6 +45,7 @@ def start():
                 ScanChannels(settingsJson, False)
 
 def ScanChannels(settings, FileEmpty):
+    """
     with open("videos.json", "r") as f:
         array = json.loads(f.read())
         for video in array:
@@ -53,11 +53,11 @@ def ScanChannels(settings, FileEmpty):
             VideoIdsInJson.append(video["video"]["id"])
             # Check if video has already been downloaded
             # VideoFinalDirs.append(video["progress"]["dir_final"])
-
+    """
     # Clears the video.json file (would be better to keep data and just append
     #                                   to it but thats a task for another day)
-    # with open("videos.json", "w") as f:
-    #    f.write("[]")
+    with open("videos.json", "w") as f:
+        f.write("[]")
 
     # For each channel get playlist of uploads, then get list of videos
     logger.log("Getting playlist IDs for channels using IDs")
@@ -96,46 +96,48 @@ def UpdateVideoFile(api_key, max_videos, PlaylistID, exceptions, OutputDir):
     with urllib.request.urlopen(PlaylistRequestURL) as request:
         playlist = json.load(request)
 
-    # Gets current JSON
-    with open("videos.json") as file:
-        VideoFile = json.loads(file.read())
+
 
     # Loop for each video in the playlist
     logger.log(f"Adding videos for playlist with ID: {PlaylistID}", "\n")
     for video in playlist["items"]:
-        if video["snippet"]["resourceId"]["videoId"] not in VideoIdsInJson:
-            videoJSON["channel_name"] = video["snippet"]["channelTitle"]
-            videoJSON["channel_id"] = video["snippet"]["channelId"]
-            videoJSON["video"]["title"] = video["snippet"]["title"]
-            videoJSON["video"]["id"] = video["snippet"]["resourceId"]["videoId"]
-            videoJSON["video"]["description"] = video["snippet"]["description"]
-            videoJSON["video"]["release_date"] = video["snippet"]["publishedAt"].split("T")[0]
-            videoJSON["progress"]["dir_final"] = OutputDir + re.sub(r"\W+", " ", videoJSON["video"]["title"])
+        videoJSON = emptyJSON
+        # if video["snippet"]["resourceId"]["videoId"] not in VideoIdsInJson:
+        videoJSON["channel_name"] = video["snippet"]["channelTitle"]
+        videoJSON["channel_id"] = video["snippet"]["channelId"]
+        videoJSON["video"]["title"] = video["snippet"]["title"]
+        videoJSON["video"]["id"] = video["snippet"]["resourceId"]["videoId"]
+        videoJSON["video"]["description"] = video["snippet"]["description"]
+        videoJSON["video"]["release_date"] = video["snippet"]["publishedAt"].split("T")[0]
+        videoJSON["progress"]["dir_final"] = OutputDir + re.sub(r"\W+", " ", videoJSON["video"]["title"])
 
-            # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
-            try:
-                videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
-            except KeyError:
-                videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
+        # Could change this to use the final index of the "thumbnails" section to avoid using try-catch.
+        try:
+            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["maxres"]["url"]
+        except KeyError:
+            videoJSON["video"]["thumbnail_url"] = video["snippet"]["thumbnails"]["high"]["url"]
 
-            logger.log("  - Adding '" + videoJSON["channel_name"] + "' - '" + videoJSON["video"]["title"] + "'")
+        # Check for exceptions
+        logger.log("      - Checking for exceptions")
+        for exception in exceptions:
+            if exception["keyword"] in videoJSON["video"]["title"]:
+                logger.log("      - Exception found, replacing '" + videoJSON["channel_name"] + "' for '" + exception["new_channel_name"] + "'")
+                videoJSON["channel_name"] = exception["new_channel_name"]
 
-            # Check for exceptions
-            logger.log("      - Checking for exceptions")
-            for exception in exceptions:
-                if exception["keyword"] in videoJSON["video"]["title"]:
-                    logger.log("      - Exception found, replacing '" + videoJSON["channel_name"] + "' for '" + exception["new_channel_name"] + "'")
-                    videoJSON["channel_name"] = exception["new_channel_name"]
+        logger.log("  - Adding '" + re.sub(r"\W+", " ", videoJSON["channel_name"]) + "' - '" + re.sub(r"\W+", " ", videoJSON["video"]["title"]) + "'")
 
 
-            VideoFile.append(videoJSON)
+        # Gets current JSON
+        with open("videos.json", "r") as file:
+            VideoFile = json.loads(file.read())
+
+        VideoFile.append(videoJSON)
 
         # Remove the videos that have been downloaded from the 'videos.json' file
         # if re.sub(r"\W+", " ", videoJSON["video"]["title"]) not in os.listdir(f'{OutputDir}/{video["snippet"]["channelTitle"]}'):
 
-
-    # Appends new video to JSON
-    logger.log("  - Adding new videos to the 'videos.json'")
-    with open("videos.json", "w") as file:
-        json.dump(VideoFile, file, sort_keys=True, indent=4,
-                        separators=(',', ': '))
+        # Appends new video to JSON
+        logger.log("      - Adding new videos to the 'videos.json'")
+        with open("videos.json", "w") as file:
+            json.dump(VideoFile, file, sort_keys=True, indent=4,
+                            separators=(',', ': '))
